@@ -1,13 +1,15 @@
 :root {
-  color-scheme: dark;
-  --bg: #0c0e12;
-  --surface: #151922;
-  --border: #2a3142;
-  --text: #e8ecf4;
-  --muted: #8b95a8;
-  --accent: #6ee7b7;
-  --accent-dim: #34d399;
-  --danger: #f87171;
+  color-scheme: light;
+  --bg: #f4f7ff;
+  --surface: #ffffff;
+  --border: #d4dcf0;
+  --text: #1a2238;
+  --muted: #5c6b8a;
+  --accent: #ff6b4a;
+  --accent-dim: #e85d04;
+  --accent-secondary: #0ea5e9;
+  --accent-violet: #8b5cf6;
+  --danger: #dc2626;
   --font: 'DM Sans', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 }
@@ -24,11 +26,18 @@ body {
   font-family: var(--font);
   background-color: var(--bg);
   background-image:
-    linear-gradient(180deg, rgba(8, 12, 18, 0.88) 0%, rgba(12, 14, 18, 0.94) 100%),
-    radial-gradient(900px 500px at 100% 0%, rgba(19, 37, 31, 0.45) 0%, transparent 50%),
+    linear-gradient(
+      135deg,
+      rgba(255, 245, 238, 0.94) 0%,
+      rgba(232, 246, 255, 0.9) 45%,
+      rgba(245, 235, 255, 0.92) 100%
+    ),
+    radial-gradient(ellipse 80% 60% at 0% 0%, rgba(255, 107, 74, 0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 20%, rgba(14, 165, 233, 0.3) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 45% at 50% 100%, rgba(139, 92, 246, 0.22) 0%, transparent 50%),
     url('/fitness-bg.jpg');
-  background-size: cover, auto, cover;
-  background-position: center, center, center;
+  background-size: cover, auto, auto, auto, cover;
+  background-position: center, center, center, center, center;
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
@@ -49,6 +58,10 @@ header h1 {
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0 0 0.5rem;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 55%, var(--accent-violet) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 header p {
@@ -58,10 +71,11 @@ header p {
 }
 
 form.card {
-  background: rgba(21, 25, 34, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 32px rgba(26, 34, 56, 0.08);
   border-radius: 14px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -99,20 +113,23 @@ label.choice {
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   font-size: 0.875rem;
   user-select: none;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
 label.choice:has(input:checked) {
-  border-color: var(--accent-dim);
-  background: rgba(110, 231, 183, 0.12);
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(255, 107, 74, 0.18) 0%, rgba(14, 165, 233, 0.14) 100%);
   color: var(--text);
+  box-shadow: 0 2px 12px rgba(255, 107, 74, 0.2);
 }
 
-label.choice input {
-  accent-color: var(--accent-dim);
+label.choice input,
+label.equip input {
+  accent-color: var(--accent);
 }
 
 .equip-grid {
@@ -128,14 +145,15 @@ label.equip {
   padding: 0.5rem 0.65rem;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.75);
   cursor: pointer;
   font-size: 0.8rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 label.equip:has(input:checked) {
-  border-color: var(--accent-dim);
-  background: rgba(110, 231, 183, 0.1);
+  border-color: var(--accent-secondary);
+  background: rgba(14, 165, 233, 0.12);
 }
 
 .time-row {
@@ -150,7 +168,7 @@ label.equip:has(input:checked) {
   padding: 0.5rem 0.65rem;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: #fff;
   color: var(--text);
   font-family: var(--mono);
   font-size: 0.9rem;
@@ -161,8 +179,9 @@ button.primary {
   padding: 0.85rem 1rem;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent) 0%, #2dd4bf 100%);
-  color: #042f2e;
+  background: linear-gradient(135deg, var(--accent) 0%, #f97316 40%, var(--accent-secondary) 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(255, 107, 74, 0.4);
   font-family: var(--font);
   font-weight: 700;
   font-size: 1rem;
@@ -178,10 +197,11 @@ button.primary:active {
 }
 
 .output {
-  background: rgba(21, 25, 34, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 32px rgba(26, 34, 56, 0.08);
   border-radius: 14px;
   padding: 1.5rem;
 }
@@ -238,14 +258,16 @@ ol.workout li:first-child {
 
 ol.workout-warmup li::before {
   content: counter(w);
-  color: #fbbf24;
+  color: #f59e0b;
+  font-weight: 600;
 }
 
 ol.workout li::before {
   content: counter(w);
   font-family: var(--mono);
   font-size: 0.75rem;
-  color: var(--accent);
+  color: var(--accent-secondary);
+  font-weight: 600;
   line-height: 1.6;
 }
 
@@ -258,12 +280,14 @@ ol.workout li::before {
   font-family: var(--mono);
   font-size: 0.85rem;
   color: var(--accent-dim);
+  font-weight: 500;
 }
 
 .ex-rpe {
   grid-column: 2;
   font-size: 0.8rem;
-  color: #a5b4fc;
+  color: var(--accent-violet);
+  font-weight: 500;
 }
 
 .ex-embed-details {
@@ -273,7 +297,7 @@ ol.workout li::before {
   min-width: 0;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(244, 247, 255, 0.8);
   overflow: hidden;
 }
 
@@ -299,8 +323,8 @@ ol.workout li::before {
   content: '';
   width: 0.45rem;
   height: 0.45rem;
-  border-right: 2px solid var(--accent-dim);
-  border-bottom: 2px solid var(--accent-dim);
+  border-right: 2px solid var(--accent-secondary);
+  border-bottom: 2px solid var(--accent-secondary);
   transform: rotate(-45deg);
   transition: transform 0.15s ease;
   flex-shrink: 0;
@@ -333,7 +357,7 @@ ol.workout li::before {
   aspect-ratio: 16 / 9;
   border-radius: 10px;
   overflow: hidden;
-  background: #0a0a0a;
+  background: #e8ecf4;
   border: 1px solid var(--border);
 }
 
@@ -356,7 +380,7 @@ ol.workout li::before {
   margin-top: 0.45rem;
   font-size: 0.78rem;
   font-weight: 500;
-  color: #f87171;
+  color: var(--accent);
   text-decoration: none;
 }
 
