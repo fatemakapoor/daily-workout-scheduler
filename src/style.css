@@ -22,8 +22,14 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--font);
-  background: radial-gradient(1200px 600px at 10% -10%, #1a2332 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, #13251f 0%, transparent 50%), var(--bg);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(180deg, rgba(8, 12, 18, 0.88) 0%, rgba(12, 14, 18, 0.94) 100%),
+    radial-gradient(900px 500px at 100% 0%, rgba(19, 37, 31, 0.45) 0%, transparent 50%),
+    url('/fitness-bg.jpg');
+  background-size: cover, auto, cover;
+  background-position: center, center, center;
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.5;
 }
@@ -52,7 +58,9 @@ header p {
 }
 
 form.card {
-  background: var(--surface);
+  background: rgba(21, 25, 34, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 1.5rem;
@@ -170,7 +178,9 @@ button.primary:active {
 }
 
 .output {
-  background: var(--surface);
+  background: rgba(21, 25, 34, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 1.5rem;
