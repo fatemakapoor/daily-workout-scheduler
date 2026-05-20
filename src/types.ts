@@ -1,3 +1,11 @@
+/**
+ * Shared domain types for the workout scheduler.
+ *
+ * Workflow: main.ts collects WorkoutInputs from the form → scheduler.ts filters
+ * ExerciseDef rows from exerciseBank.ts → outputs BuiltWorkout (warmup + main rows).
+ * exerciseVideos.ts optionally attaches YouTube URLs by exercise id.
+ */
+
 export type WorkoutFocus = 'upper' | 'arms' | 'legs' | 'total' | 'core';
 
 export type Location = 'gym' | 'home';

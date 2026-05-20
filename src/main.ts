@@ -1,3 +1,15 @@
+/**
+ * UI entry point: renders the form, reads constraints, and displays the built session.
+ *
+ * Workflow:
+ * 1. render() — build form + output shell, wire listeners
+ * 2. readInputs() — snapshot checked radios/checkboxes into WorkoutInputs
+ * 3. buildWorkout() — scheduler picks warm-up + main exercises
+ * 4. run() — refresh summary and exercise lists (also on load and constraint changes)
+ *
+ * Equipment UI is kept consistent via syncEquipmentUI() (bodyweight ↔ no equipment, etc.).
+ */
+
 import './style.css';
 import { buildWorkout, summarizeInputs } from './scheduler';
 import type { Equipment, LoadType, Location, ScheduledExercise, WorkoutFocus, WorkoutInputs } from './types';
@@ -22,6 +34,7 @@ const EQUIP_OPTIONS: { value: Equipment; label: string }[] = [
   { value: 'machines', label: 'Machines' },
 ];
 
+/** Read the live form into WorkoutInputs; normalizes empty/mixed equipment edge cases. */
 function readInputs(root: HTMLElement): WorkoutInputs | { error: string } {
   const focus = root.querySelector<HTMLInputElement>('input[name="focus"]:checked')?.value as
     | WorkoutFocus
@@ -45,9 +58,11 @@ function readInputs(root: HTMLElement): WorkoutInputs | { error: string } {
     equipment.push(el.value as Equipment);
   });
 
+  // UI should prevent this, but treat unchecked boxes as bodyweight-only
   if (equipment.length === 0) {
     equipment.push('none');
   }
+  // Defensive: if "none" slipped in alongside other boxes, drop the sentinel
   if (equipment.includes('none') && equipment.length > 1) {
     return {
       focus,
@@ -61,6 +76,12 @@ function readInputs(root: HTMLElement): WorkoutInputs | { error: string } {
   return { focus, location, durationMinutes, loadType, equipment };
 }
 
+/**
+ * Enforce equipment/load rules in the DOM (disabled state mirrors business rules).
+ * - Bodyweight load → only "No equipment", others cleared and disabled
+ * - "No equipment" checked → other options cleared and disabled
+ * - Otherwise → all equipment options enabled
+ */
 function syncEquipmentUI(root: HTMLElement): void {
   const loadType = root.querySelector<HTMLInputElement>('input[name="load"]:checked')?.value;
   const isBodyweight = loadType === 'bodyweight';
@@ -101,6 +122,7 @@ function syncEquipmentUI(root: HTMLElement): void {
   }
 }
 
+/** Wire load/equipment change handlers; calls onChange (run) after each sync. */
 function bindEquipmentConstraints(root: HTMLElement, onChange: () => void): void {
   root.querySelectorAll<HTMLInputElement>('input[name="load"]').forEach((radio) => {
     radio.addEventListener('change', () => {
@@ -112,6 +134,7 @@ function bindEquipmentConstraints(root: HTMLElement, onChange: () => void): void
   root.querySelectorAll<HTMLInputElement>('input[name="equip"]').forEach((checkbox) => {
     checkbox.addEventListener('change', () => {
       const noneInput = root.querySelector<HTMLInputElement>('input[name="equip"][value="none"]');
+      // Selecting real gear exits "no equipment" before sync disables the rest
       if (checkbox.value !== 'none' && checkbox.checked && noneInput) {
         noneInput.checked = false;
       }
@@ -204,6 +227,7 @@ function render(): void {
   const summaryEl = app.querySelector<HTMLParagraphElement>('#summary');
   const errEl = app.querySelector<HTMLDivElement>('#form-error');
 
+  // Lazy-load YouTube iframes only when the user opens a form-video accordion
   blocksEl?.addEventListener('toggle', (e) => {
     const details = e.target;
     if (!(details instanceof HTMLDetailsElement) || !details.classList.contains('ex-embed-details')) return;
@@ -234,6 +258,7 @@ function render(): void {
     </ol>`;
   };
 
+  /** Parse form → build workout → paint summary + warm-up/main lists. */
   const run = () => {
     const parsed = readInputs(app);
     if ('error' in parsed) {
@@ -284,6 +309,7 @@ function escapeAttr(s: string): string {
   return s.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
 }
 
+/** Parse youtu.be / youtube.com / embed URLs for nocookie iframe src. */
 function extractYouTubeId(url: string): string | null {
   try {
     const u = new URL(url.trim());
@@ -304,6 +330,7 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
+/** Collapsible embed; iframe src stays in data-src until the details panel opens. */
 function renderYoutubeEmbed(videoUrl: string | undefined, exerciseName: string): string {
   if (!videoUrl) return '';
   const id = extractYouTubeId(videoUrl);

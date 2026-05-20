@@ -1,3 +1,12 @@
+/**
+ * Workout generation: filter the exercise bank, pack exercises into the time budget,
+ * and attach prescriptions + RPE. Warm-up content comes from warmup.ts.
+ *
+ * Main selection pipeline:
+ * filterCandidates → (fallback if empty) → deprioritize gym-only at home → shuffle →
+ * greedy pack by slotMinutes → map to ScheduledExercise rows.
+ */
+
 import { EXERCISES } from './exerciseBank';
 import { EXERCISE_VIDEO_BY_ID } from './exerciseVideos';
 import type {
@@ -13,6 +22,7 @@ import type {
 } from './types';
 import { buildWarmup } from './warmup';
 
+/** Minutes held back from the user’s duration for the fixed warm-up block */
 const WARMUP_RESERVE_MIN = 5;
 
 const ACCESSORY_IDS = new Set([
@@ -27,6 +37,7 @@ const ACCESSORY_IDS = new Set([
   'hanging-knee',
 ]);
 
+/** Maps exercise metadata to an effort tier when rpeTarget is not set on the def */
 function inferEffort(ex: ExerciseDef): EffortCategory {
   if (ex.effort) return ex.effort;
   if (ex.id === 'plank' || ex.id === 'side-plank') return 'core';
@@ -54,6 +65,7 @@ function formatRpe(ex: ExerciseDef): string {
   }
 }
 
+/** User must have every piece listed in ex.requires (AND logic) */
 function hasEquipment(user: Set<Equipment>, required: Equipment[]): boolean {
   return required.every((e) => user.has(e));
 }
@@ -68,6 +80,7 @@ function focusMatches(ex: ExerciseDef, focus: WorkoutFocus): boolean {
   return ex.focusTags.includes(focus);
 }
 
+/** Home sessions hide gym-only moves unless the user actually has cable/machines */
 function locationAllows(ex: ExerciseDef, location: Location, userEquip: Set<Equipment>): boolean {
   if (location === 'gym') return true;
   // At home, still allow any exercise the user has equipment for; deprioritize gym-style slots in ordering
@@ -78,6 +91,7 @@ function locationAllows(ex: ExerciseDef, location: Location, userEquip: Set<Equi
   return true;
 }
 
+/** Apply focus, equipment, load, and location gates to the exercise bank */
 function filterCandidates(inputs: WorkoutInputs): ExerciseDef[] {
   const userEquip = new Set(inputs.equipment);
   if (!userEquip.has('none') && inputs.equipment.length === 0) {
@@ -93,6 +107,7 @@ function filterCandidates(inputs: WorkoutInputs): ExerciseDef[] {
   });
 }
 
+/** Deterministic shuffle so the same daySeed yields the same session order */
 function shuffle<T>(arr: T[], seed: number): T[] {
   const out = [...arr];
   let s = seed;
@@ -104,6 +119,10 @@ function shuffle<T>(arr: T[], seed: number): T[] {
   return out;
 }
 
+/**
+ * Choose sets×reps vs sets×time based on load style.
+ * Bodyweight prefers time-based defaults; weights prefer reps; combination uses defaultOutput.
+ */
 function pickPrescription(ex: ExerciseDef, load: LoadType): { prescription: string; detail?: string } {
   if (load === 'bodyweight') {
     if (ex.defaultOutput === 'time' && ex.time) {
@@ -153,6 +172,7 @@ export function buildWorkout(inputs: WorkoutInputs, daySeed = Date.now()): Built
   const mainBudget = Math.max(8, session - WARMUP_RESERVE_MIN) * 0.85;
   let candidates = filterCandidates(inputs);
 
+  // No strict match: try bodyweight-only exercises, then any exercise for this focus
   if (candidates.length === 0) {
     const relaxed = EXERCISES.filter(
       (ex) =>
@@ -163,12 +183,14 @@ export function buildWorkout(inputs: WorkoutInputs, daySeed = Date.now()): Built
     candidates = relaxed.length ? relaxed : EXERCISES.filter((ex) => focusMatches(ex, inputs.focus));
   }
 
+  // Sort gym-preferred lifts later at home; shuffle within each tier for variety
   const homeBoost = (e: ExerciseDef) => (inputs.location === 'home' && e.gymPreferred ? 1 : 0);
   const sorted = [...candidates].sort((a, b) => homeBoost(a) - homeBoost(b));
   const ordered = shuffle(sorted, daySeed % 100000);
   const picked: ExerciseDef[] = [];
   let used = 0;
 
+  // Greedy pack: add exercises in shuffled order until the main-work minute budget is full
   for (const ex of ordered) {
     if (used + ex.slotMinutes > mainBudget) continue;
     picked.push(ex);
@@ -176,6 +198,7 @@ export function buildWorkout(inputs: WorkoutInputs, daySeed = Date.now()): Built
     if (used >= mainBudget - 2) break;
   }
 
+  // Guarantee at least one main exercise when the bank had any candidates
   if (picked.length === 0 && candidates[0]) {
     picked.push(candidates[0]);
   }
@@ -197,6 +220,7 @@ export function buildWorkout(inputs: WorkoutInputs, daySeed = Date.now()): Built
   return { warmup, main };
 }
 
+/** One-line session header shown above the warm-up and main lists */
 export function summarizeInputs(inputs: WorkoutInputs): string {
   const equip =
     inputs.equipment.length === 0

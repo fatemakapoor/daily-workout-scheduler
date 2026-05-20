@@ -1,5 +1,6 @@
 /**
- * Form tutorials (YouTube). Swap URLs anytime; keyed by exercise `id` in exerciseBank.
+ * Optional form tutorials (YouTube), keyed by exercise `id` from exerciseBank.ts.
+ * scheduler.ts attaches these to main-work rows; main.ts lazy-loads embeds on expand.
  */
 export const EXERCISE_VIDEO_BY_ID: Record<string, string> = {
   'bb-bench': 'https://www.youtube.com/watch?v=vcBig73ojpE',

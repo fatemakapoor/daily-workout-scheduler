@@ -1,6 +1,16 @@
 import type { ExerciseDef } from './types';
 
-/** Curated bank: expand or edit freely */
+/**
+ * Curated exercise bank — add or edit rows here to change what the scheduler can pick.
+ *
+ * Each ExerciseDef is filtered in scheduler.ts by:
+ * - focusTags (or any exercise when focus is "total")
+ * - requires: user must have checked ALL listed equipment
+ * - loadTypes: must include the user’s load style (combination skips this check)
+ * - gymPreferred + location: deprioritized at home when gear is missing
+ *
+ * slotMinutes drives how many exercises fit in the session time budget.
+ */
 export const EXERCISES: ExerciseDef[] = [
   // Upper — compound
   {

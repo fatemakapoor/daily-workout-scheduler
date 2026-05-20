@@ -1,5 +1,11 @@
+/**
+ * Fixed warm-up template (not picked from the exercise bank).
+ * Three steps: pulse raiser → focus-specific mobility → ramp-up set before main work.
+ */
+
 import type { ScheduledExercise, WorkoutFocus, WorkoutInputs } from './types';
 
+/** Second warm-up row; movement prep varies by the user’s workout focus */
 function mobilityForFocus(focus: WorkoutFocus): ScheduledExercise {
   switch (focus) {
     case 'legs':
