@@ -61,6 +61,68 @@ function readInputs(root: HTMLElement): WorkoutInputs | { error: string } {
   return { focus, location, durationMinutes, loadType, equipment };
 }
 
+function syncEquipmentUI(root: HTMLElement): void {
+  const loadType = root.querySelector<HTMLInputElement>('input[name="load"]:checked')?.value;
+  const isBodyweight = loadType === 'bodyweight';
+  const equipInputs = [...root.querySelectorAll<HTMLInputElement>('input[name="equip"]')];
+  const noneInput = equipInputs.find((el) => el.value === 'none');
+  const otherInputs = equipInputs.filter((el) => el.value !== 'none');
+
+  const setDisabled = (input: HTMLInputElement, disabled: boolean) => {
+    input.disabled = disabled;
+    input.closest('label.equip')?.classList.toggle('equip--disabled', disabled);
+  };
+
+  if (isBodyweight) {
+    if (noneInput) {
+      noneInput.checked = true;
+      setDisabled(noneInput, false);
+    }
+    for (const el of otherInputs) {
+      el.checked = false;
+      setDisabled(el, true);
+    }
+    return;
+  }
+
+  const noneChecked = noneInput?.checked ?? false;
+
+  if (noneInput) setDisabled(noneInput, false);
+
+  if (noneChecked) {
+    for (const el of otherInputs) {
+      el.checked = false;
+      setDisabled(el, true);
+    }
+  } else {
+    for (const el of otherInputs) {
+      setDisabled(el, false);
+    }
+  }
+}
+
+function bindEquipmentConstraints(root: HTMLElement, onChange: () => void): void {
+  root.querySelectorAll<HTMLInputElement>('input[name="load"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+      syncEquipmentUI(root);
+      onChange();
+    });
+  });
+
+  root.querySelectorAll<HTMLInputElement>('input[name="equip"]').forEach((checkbox) => {
+    checkbox.addEventListener('change', () => {
+      const noneInput = root.querySelector<HTMLInputElement>('input[name="equip"][value="none"]');
+      if (checkbox.value !== 'none' && checkbox.checked && noneInput) {
+        noneInput.checked = false;
+      }
+      syncEquipmentUI(root);
+      onChange();
+    });
+  });
+
+  syncEquipmentUI(root);
+}
+
 function render(): void {
   const app = document.querySelector<HTMLDivElement>('#app');
   if (!app) return;
@@ -203,6 +265,8 @@ function render(): void {
     e.preventDefault();
     run();
   });
+
+  bindEquipmentConstraints(app, run);
 
   // Initial plan
   run();

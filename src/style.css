@@ -156,6 +156,12 @@ label.equip:has(input:checked) {
   background: rgba(14, 165, 233, 0.12);
 }
 
+label.equip.equip--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .time-row {
   display: flex;
   align-items: center;
